@@ -23,10 +23,6 @@ python-multipart==0.0.20
 PyYAML==6.0.3
 soundfile==0.13.1
 starlette==0.50.0
-sympy==1.14.0
-torch==2.9.1+cu126
-torchaudio==2.9.1+cu126
-torchvision==0.24.1+cu126
 typing-inspection==0.4.2
 typing_extensions==4.15.0
 uvicorn==0.38.0
