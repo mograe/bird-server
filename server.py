@@ -12,6 +12,10 @@ import torch.nn as nn
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from torchvision.models import efficientnet_b0
 import torchaudio
+import socket
+
+from contextlib import asynccontextmanager
+import os
 
 MODEL_DIR = Path("./model")
 MODEL_PATH = MODEL_DIR / "sipuha_v2.pth"
@@ -29,7 +33,27 @@ FMAX = TARGET_SR / 2
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
-app = FastAPI(title="BirdLover Inference API")
+@asynccontextmanager
+async def lifespan(app):
+    port = int(os.getenv("PORT", "8000"))  # если у тебя порт в env
+    print(f"LAN:   http://{get_lan_ip()}:{port}")
+    print(f"Local: http://127.0.0.1:{port}")
+    yield
+
+
+app = FastAPI(title="BirdLover Inference API", lifespan=lifespan)
+
+
+def get_lan_ip() -> str:
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        s.connect(("8.8.8.8", 80))
+        return s.getsockname()[0]
+    except Exception:
+        return "127.0.0.1"
+    finally:
+        s.close()
+
 
 def load_classes() -> List[str]:
     if not CLASSES_PATH.exists():
@@ -149,6 +173,8 @@ class BirdPredictor:
         ]
     
 PRED = BirdPredictor()
+
+
 
 @app.get("/health")
 def health():
